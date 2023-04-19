@@ -1,0 +1,34 @@
+{
+  "name": "cl-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/bin/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gowtham212088/CL-task.git"
+  },
+  "author": "Gowtham Kumar V",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gowtham212088/CL-task/issues"
+  },
+  "homepage": "https://github.com/Gowtham212088/CL-task#readme",
+  "dependencies": {
+    "18": "^0.0.0",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.4",
+    "node": "^19.8.1",
+    "uuidv4": "^6.2.13"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
