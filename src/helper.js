@@ -13,4 +13,9 @@ module.exports = {
     });
     return token;
   },
+  tokenVerifier: async (token) =>{
+    const verifyToken = await jsonwebtoken.verify(token,process.env.privateKey)
+    return verifyToken
+  }
+  
 };

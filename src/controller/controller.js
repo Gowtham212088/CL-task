@@ -13,7 +13,7 @@ module.exports = {
       username: request.body.username,
       email: request.body.email,
       contact: request.body.contact,
-      destination: [],
+      destination: { address: "www.destini.in" },
       password: conformedPassword,
     };
 
@@ -41,9 +41,11 @@ module.exports = {
       }
     }
   },
+  //* HERE THE USER CAN ABLE TO GET SOME OF THEIR OWN DATA FOR PROFILE DISPLAY
   loginUser: async (request, response) => {
     try {
       const { email, password } = request.body;
+      console.log(password)
       const isMailVerified = await userSchema.findOne({ email: email });
       const isPasswordMatching = await bcrypt.compare(
         password,
@@ -58,14 +60,26 @@ module.exports = {
         });
       } else {
         if (isPasswordMatching) {
-          const token = await library.tokenGenerator({ isMailVerified });
-
+          const token = await library.tokenGenerator({
+            Account_Id: isMailVerified.Account_Id,
+          });
+          const datas = {
+            name: isMailVerified.username,
+            email: isMailVerified.email,
+            destination: isMailVerified.destination,
+          };
           console.log(token);
           response.status(200).send({
             message: "Login Successful",
             status: true,
             token: token,
+            data: datas,
           });
+        }else{
+          response.status(401).send({
+            message:'Unauthorized',
+            status:false
+          })
         }
       }
     } catch (error) {
@@ -75,5 +89,89 @@ module.exports = {
         status: false,
       });
     }
+  },
+  getAllUser: async (request, response) => {
+    try {
+      const getHeadersData = request.header("CL-X-TOKEN");
+      const verifyToken = await library.tokenVerifier(getHeadersData);
+      const verifyUser = await userSchema.findOne(verifyToken.payload);
+      if (verifyUser) {
+        const getAllUsers = await userSchema.find();
+        response.status(200).send({
+          message: "Successful",
+          status: true,
+          data: getAllUsers,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      response.status(401).send({
+        message: "Un Authorized",
+        status: false,
+      });
+    }
+  },
+  deleteUserById: async (request, response) => {
+    try {
+      const token = request.header("CL-X-TOKEN");
+      const deleteUser = request.body;
+      const verifyToken = await library.tokenVerifier(token);
+      const userExists = await userSchema.findOne(verifyToken.payload);
+      console.log(deleteUser);
+      console.log(userExists.Account_Id);
+      if (userExists.Account_Id !== deleteUser.Account_Id) {
+        const deleteuserData = await userSchema.deleteOne(deleteUser);
+        response.status(200).send({
+          message: `${deleteUser.Account_Id} Deleted Successfully`,
+          status: true,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      response.status(403).send({
+        message: "User cannot delete by himself",
+        status: false,
+      });
+    }
+  },
+  editOwnData: async (request, response) => {
+    const password = request.body.password;
+    const conformPassword = request.body.conformPassword;
+    const token = request.header("CL-X-TOKEN");
+    const verifyToken = await library.tokenVerifier(token);
+    const verifyUser = await userSchema.findOne(verifyToken.payload);
+    console.log(verifyUser);
+    if (verifyUser) {
+      let conformedPassword;
+      if (password === conformPassword) {
+        conformedPassword = await library.createPassword(password);
+        const editedData = {
+          Account_Id: verifyToken.payload.Account_Id,
+          username: request.body.username,
+          email: request.body.email,
+          contact: request.body.contact,
+          destination: { address: "www.destini.in" },
+          password: conformedPassword,
+        };
+        const editUserData = await userSchema.findOneAndReplace(
+          verifyToken.payload, // search criteria
+          editedData, // replacement document
+          { new: true } // return updated document
+        );
+
+        response.status(200).send({
+          message: "User details updated successfully",
+          data: editUserData,
+          status: true,
+        });
+      } else {
+        response.status(403).status({
+          message: "Password dosen't match",
+          status: false,
+        });
+      }
+    }
+
+    // console.log(conformedPassword);
   },
 };
