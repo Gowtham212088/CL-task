@@ -1,6 +1,6 @@
 <h1> API Documentation </h1>
 
-Welcome to the documentation for the [Name of Your API] API. This API allows you to [Briefly describe what your API does].
+Welcome to the documentation for the DATA PUSHER API.
 
 <h2>  In the project directory, you can run: </h2>
 
