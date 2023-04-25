@@ -395,7 +395,3 @@ module.exports = {
   },
 };
 
-// updateOne(
-//   { account_Id: 2, "destination.1": { $exists: true } },
-//   { $set: { "destination.1.house": "new value", "destination.1.street": "new value" } }
-// );
