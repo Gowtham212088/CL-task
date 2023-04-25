@@ -7,15 +7,17 @@ module.exports = {
     const hash = await bcrypt.hash(password, salt);
     return hash;
   },
-  tokenGenerator:async (payload) => {
+  tokenGenerator: async (payload) => {
     const token = jsonwebtoken.sign({ payload }, process.env.privateKey, {
       expiresIn: "9hours",
     });
     return token;
   },
-  tokenVerifier: async (token) =>{
-    const verifyToken = await jsonwebtoken.verify(token,process.env.privateKey)
-    return verifyToken
-  }
-  
+  tokenVerifier: async (token) => {
+    const verifyToken = await jsonwebtoken.verify(
+      token,
+      process.env.privateKey
+    );
+    return verifyToken;
+  },
 };
