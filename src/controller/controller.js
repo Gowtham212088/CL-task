@@ -3,11 +3,14 @@ const destinationSchema = require("../model/destinationSchema");
 const adminSchema = require("../model/adminSchema");
 const bcrypt = require("bcrypt");
 const library = require("../helper");
+const fs = require("fs");
+const url = require("url");
 const { request } = require("http");
 const { response } = require("..");
+const { urlencoded } = require("express");
 
 module.exports = {
-  // ! CREATING ADMIN ACCOUNT
+  // ! CREATING ADMIN ACCOUNT (CHECKED)
 
   createAdmin: async (request, response) => {
     try {
@@ -29,7 +32,7 @@ module.exports = {
       if (!checkUserExists) {
         const adminDetails = await adminSchema.create(adminData);
         console.log(
-          `ADMIN ACCOUNT CREATED SUCESSFULLY IN ID OF ${destination.Account_Id}`
+          `ADMIN ACCOUNT CREATED SUCESSFULLY IN ID OF ${adminDetails.Account_Id}`
         );
         console.log(Date());
         response.status(200).send({
@@ -51,7 +54,7 @@ module.exports = {
     }
   },
 
-  // ! ADMIN LOGIN
+  // ! ADMIN LOGIN (CHECKED)
 
   adminLogin: async (request, response) => {
     try {
@@ -104,7 +107,7 @@ module.exports = {
     }
   },
 
-  // ! USER CREATION
+  // ! USER CREATION (CHECKED)
 
   createUser: async (request, response) => {
     const password = request.body.password;
@@ -155,14 +158,15 @@ module.exports = {
     }
   },
 
-  // ! USER CREATE DESTINATIONS.
+  // ! USER CREATE DESTINATIONS. (CHECKED)
+  // ! HERE IF USER CAN CREATE A NEW DESTINATION, IF ALREADY ONE DESTINATION EXISTS, THE GIVEN INPUT WILL BE ADDED AS NEXT DESTINATION OF THAT PARTICULAR USER.
 
   userCreateDestinations: async (request, response) => {
     const token = request.header("CL-X-TOKEN");
     const verifyToken = await library.tokenVerifier(token);
     const userId = verifyToken.payload.Account_Id;
     const user = await destinationSchema.findOne({ Account_Id: userId });
-    console.log(userId);
+
     const { house, door, street } = request.body;
     if (user) {
       const updateDestiny = await destinationSchema.updateOne(
@@ -181,7 +185,6 @@ module.exports = {
       console.log(getData[0]);
       response.send(updateDestiny);
     } else {
-      console.log("No user");
       const createDestination = await destinationSchema.create({
         Account_Id: userId,
         destination: [
@@ -192,7 +195,8 @@ module.exports = {
           },
         ],
       });
-
+      console.log(Date());
+      console.log("USER DESTINATION CREATED SUCESSFULLY");
       response.status(200).send({
         message: "Destination created sucessfully",
         data: createDestination,
@@ -201,7 +205,9 @@ module.exports = {
     }
   },
 
-  // ! USER LOGIN
+  // ! USER LOGIN (CHECKED)
+  //! IF LOGIN SUCESSFUL, THE TOKEN WILL BE RECEIVED VIA RESPONSE.
+  //! THAT AUTHORIZATION TOKEN IS MUST FOR CREATING A DESTINATIONS, AS A USER.
   //! HERE USER CAN GET SOME OF THEIR OWN DATA FOR PROFILE DISPLAY (LOGIN DATA).
 
   loginUser: async (request, response) => {
@@ -255,7 +261,7 @@ module.exports = {
       });
     }
   },
-  //! ADMIN USED TO VIEW ALL USERDETAILS FOR REFERANCES.
+  //! ADMIN USED TO VIEW ALL USERDETAILS FOR REFERANCES.(CHECKED)
   getAllUser: async (request, response) => {
     try {
       const getAllUsers = await userSchema.find();
@@ -275,8 +281,7 @@ module.exports = {
     }
   },
 
-  // ! ADMIN USED TO DELETE THE SPECIFIC USER DATA USING USER ID.
-
+  // ! ADMIN USED TO DELETE THE SPECIFIC USER DATA USING USER ID. (CHECKED)
   deleteUserById: async (request, response) => {
     try {
       const deleteUser = request.body.Account_Id;
@@ -301,7 +306,7 @@ module.exports = {
     }
   },
 
-  // ! INDIVIDUAL USER CAN EDIT HIS OWN USER DETAILS.
+  // ! INDIVIDUAL USER CAN EDIT HIS OWN USER DETAILS.(CHECKED)
 
   editOwnData: async (request, response) => {
     const password = request.body.password;
@@ -327,7 +332,7 @@ module.exports = {
           { $set: editedData }
         );
         console.log(
-          `USER ACCOUNT DETAILS OF ${editedData.Account_Id} EDITED BY USER`
+          `USER ACCOUNT DETAILS OF ${editedData.Account_Id} HAS BEEN EDITED`
         );
         console.log(Date());
         response.status(200).send({
@@ -344,13 +349,18 @@ module.exports = {
     }
   },
 
-  // ! GET ALL USER DESTINATIONS
+  // ! GET ALL USER DESTINATIONS (CHECKED)
 
   getAllDestinations: async (request, response) => {
     try {
+      const token = request.header("CL-X-TOKEN");
+      const verifyToken = await library.tokenVerifier(token);
+      console.log(verifyToken);
       const getDestinations = await destinationSchema.find();
       console.log(getDestinations.map((e) => console.log(e.address)));
-      console.log(`ADMIN ${verifyUser.Account_Id} HAS NOTED ALL DESTINATION`);
+      console.log(
+        `ADMIN ${verifyToken.payload.APP_id} HAS NOTED ALL DESTINATION`
+      );
       console.log(Date());
       response.status(200).send({
         message: "Successful",
@@ -365,6 +375,11 @@ module.exports = {
       });
     }
   },
+
+  // ! HERE USER CAN ABLE TO EDIT HIS OWN DESTINATIONS.(CHECKED).
+  // ! USER MAY HAVE MULTIPLE DESTINATIONS, SO USER MUST MENTION THE INDEX NUMBER OF THE DESTINATION TO BE EDITED.
+  // ! HERE IN URL END POINT
+
   editOwnDestinations: async (request, response) => {
     const { id } = request.params;
     const { house, door, street } = request.body;
@@ -374,6 +389,7 @@ module.exports = {
     console.log(userId);
     const getUserData = await destinationSchema.findOne({ Account_Id: userId });
     const filterData = getUserData.destination;
+    console.log(filterData);
     const replaceData = filterData.splice(id, 1, {
       house: house,
       door: door,
@@ -394,4 +410,3 @@ module.exports = {
     });
   },
 };
-

@@ -21,7 +21,8 @@ module.exports = {
           status: false,
         });
       } else {
-        console.log(`${verifyToken.payload.Account_Id} AUTHORISED AS A ADMIN`)
+        // console.log(verifyToken.payload.APP_id)
+        console.log(`${verifyToken.payload.APP_id} AUTHORISED AS A ADMIN`)
         next();
       }
     }

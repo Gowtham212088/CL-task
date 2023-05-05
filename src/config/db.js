@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const library = require("../helper");
-const adminSchema = require("../model/adminSchema");
 
 dotenv.config();
 
